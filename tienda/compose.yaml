@@ -6,18 +6,18 @@ services:
       PS_DOMAIN: "${DIRECCION}:${PUERTO:-8080}"
       PS_LANGUAGE: es
       PS_COUNTRY: ES
-      PS_DEV_MODE: 0
+      PS_DEMO_MODE: 0
       PS_FOLDER_ADMIN: admin-tienda
       PS_FOLDER_INSTALL: install-tienda
       ADMIN_MAIL: "${CORREO_ADMIN}"
-      ADMIN_PASSWD: "${CONTRASEÑA_ADMIN}"
+      ADMIN_PASSWD: "${CONTRASENA_ADMIN}"
       DB_SERVER: bd
       DB_NAME: "${DB_NAME}"
       DB_USER: "${DB_USER}"
-      DB_PASSWD: "{$DB_CONTRASEÑA}"
+      DB_PASSWD: "${DB_CONTRASENA}"
 
     volumes:
-      -ficherosTienda=/var/www/html
+      - ficherosTienda:/var/www/html
     networks:
       - interna
     ports:
@@ -27,27 +27,52 @@ services:
         condition: service_healthy
       correo:
         condition: service_started
-    restart: 
+    restart: unless-stopped
 
 
 
   bd:
-    image: 
+    image: mariadb:11.8
     environment:
+      MARIADB_DATABASE: "${DB_NAME}"
+      MARIADB_USER: "${DB_USER}"
+      MARIADB_PASSWORD: "${DB_CONTRASENA}"
+      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      
     volumes:
+      - datos-bd:/var/lib/mysql
     networks:
-    ports:
+      - interna
+    
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+  
+  correo: 
+    image: axllent/mailpit:v1.32
+    ports:
+      - "${PUERTO_CORREO:-8025}:8025"
+    networks:
+      - interna
+    restart: unless-stopped
+
+  adminer: 
+    image: adminer:5
+    environment:
+      ADMINER_DEFAULT_SERVER: bd
+    ports:
+      - "${PUERTO_ADMINER:-8081}:8080"
     depends_on:
-    restart:
-  correo:
+      - bd
+    networks:
+      - interna
 
 volumes:
   ficherosTienda:
+  datos-bd:
 
 networks:
   interna:
