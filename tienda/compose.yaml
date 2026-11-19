@@ -3,18 +3,18 @@ services:
     image: prestashop/prestashop:8.2
     environment:
       PS_INSTALL_AUTO: 1
-      PS_DOMAIN: "${DIRECCION}:${PUERTO:-8080}"
+      PS_DOMAIN: ${DIRECCION:?La direccion es obligatoria}:${PUERTO:-8080}
       PS_LANGUAGE: es
       PS_COUNTRY: ES
       PS_DEMO_MODE: 0
       PS_FOLDER_ADMIN: admin-tienda
       PS_FOLDER_INSTALL: install-tienda
-      ADMIN_MAIL: "${CORREO_ADMIN}"
-      ADMIN_PASSWD: "${CONTRASENA_ADMIN}"
+      ADMIN_MAIL: ${CORREO_ADMIN}
+      ADMIN_PASSWD: ${CONTRASENA_ADMIN:?La contraseña de admin es obligatoria}
       DB_SERVER: bd
-      DB_NAME: "${DB_NAME}"
-      DB_USER: "${DB_USER}"
-      DB_PASSWD: "${DB_CONTRASENA}"
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWD: ${DB_CONTRASENA:?La contraseña de la base de datos es obligatoria}
 
     volumes:
       - ficherosTienda:/var/www/html
@@ -37,8 +37,7 @@ services:
       MARIADB_DATABASE: "${DB_NAME}"
       MARIADB_USER: "${DB_USER}"
       MARIADB_PASSWORD: "${DB_CONTRASENA}"
-      MARIADB_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
-      
+      MARIADB_RANDOM_ROOT_PASSWORD: 1
     volumes:
       - datos-bd:/var/lib/mysql
     networks:
