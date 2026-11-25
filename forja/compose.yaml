@@ -1,12 +1,12 @@
 services:
   forgejo:
-    image: forgejo:17
+    image: codeberg.org/forgejo/forgejo:17
     environment:
       FORGEJO__database__DB_TYPE: postgres
       FORGEJO__database__HOST: bd:5432
       FORGEJO__database__NAME: ${BD_NOMBRE}
       FORGEJO__database__USER: ${BD_USUARIO}
-      FORGEJO__database__PAASWD: ${BD_CONTRASENA}
+      FORGEJO__database__PASSWD: ${BD_CONTRASENA}
 
       FORGEJO__server__DOMAIN: ${DIRECCION}
       FORGEJO__server__ROOT_URL: http://${DIRECCION}:${PUERTO}/
@@ -55,9 +55,9 @@ services:
   bd:
     image: postgres:18
     environment:
-      POSTGRES_DATABASE: "${DB_NAME}"
-      POSTGRES_USER: "${DB_USER}"
-      POSTGRES_PASSWORD: "${DB_CONTRASENA}"
+      POSTGRES_DB: "${BD_NOMBRE}"
+      POSTGRES_USER: "${BD_USUARIO}"
+      POSTGRES_PASSWORD: "${BD_CONTRASENA}"
       
     volumes:
       - datos-bd:/var/lib/postgresql
@@ -79,7 +79,20 @@ services:
       - interna
     restart: unless-stopped
 
-  
+  cache:
+    image: redis:7.2
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\""]
+    environment:
+      REDIS_PASSWORD: ${REDIS_CONTRASENA:?falta en el fichero .env}
+    volumes:
+      - cache-datos:/data
+    networks:
+      - interna
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   forgejo-datos:
