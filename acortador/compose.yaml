@@ -1,0 +1,45 @@
+services:
+
+  web:
+    image: nginx:1.30
+    ports:
+      - "${PUERTO:-8080}:80"
+    volumes:
+      
+    networks:
+       
+    depends_on:
+      yourls:
+        condition: service_started
+
+  yourls:
+    image: yourls:1.10.1-fpm
+    environment:
+     
+    volumes:
+      
+    networks:
+      
+    depends_on:
+      bd:
+        condition: service_healthy
+
+  bd:
+    image: mariadb:11.8
+    environment:
+
+    volumes:
+    
+    networks:
+    
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  
+
+networks:
+  
